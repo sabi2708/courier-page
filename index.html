@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courier Partner Form</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .table-container {
+      display: none;
+      background-color: beige;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="logo.png" alt="logo" class="logo" height="10%" width="10%">
+      <nav>
+        <a href="#" class="home-link">Home</a>
+      </nav>
+    </header>
+    <div class="content">
+      <div class="form-container">
+        <h2>Add Courier Partner</h2>
+        <form>
+          <input type="text" id="partnerName" placeholder="Partner Name">
+          <input type="text" id="serviceRegion" placeholder="Service Region">
+          <input type="text" id="contactNumber" placeholder="Contact Number">
+          <input type="email" id="email" placeholder="Email">
+          <input type="text" id="address" placeholder="Address">
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="expressDelivery"> Express Delivery</label>
+            <label><input type="checkbox" id="standardDelivery"> Standard Delivery</label>
+            <label><input type="checkbox" id="sameDayDelivery"> Same Day Delivery</label>
+            <label><input type="checkbox" id="internationalShipping"> International Shipping</label>
+          </div>
+          <input type="text" id="deliveryTimeframes" placeholder="Delivery Timeframes">
+          <input type="text" id="pricing" placeholder="Pricing (Optional)">
+          <div class="button-container">
+            <button type="button" class="button" onclick="addCourier()">Add Courier Partner</button>
+            <button type="reset" class="button cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div class="view-partners">
+        <button class="button" onclick="toggleCourierTable()">View Courier Partners</button>
+      </div>
+    </div>
+    <div class="table-container" id="courierTableContainer">
+      <h3>Courier Partners List</h3>
+      <table id="courierTable" border="1" cellpadding="10" style="width: 100%; text-align: left;">
+        <thead>
+          <tr>
+            <th>Partner Name</th>
+            <th>Service Region</th>
+            <th>Contact Number</th>
+            <th>Email</th>
+            <th>Address</th>
+            <th>Delivery Timeframes</th>
+            <th>Pricing</th>
+            <th>Delivery Options</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Rows will be added dynamically here -->
+        </tbody>
+      </table>
+    </div>
+    <script>
+      function toggleCourierTable() {
+        const tableContainer = document.getElementById('courierTableContainer');
+        if (tableContainer.style.display === 'none' || tableContainer.style.display === '') {
+          tableContainer.style.display = 'block';
+          loadCourierData(); // Load saved data when showing the table
+        } else {
+          tableContainer.style.display = 'none';
+        }
+      }
+
+      function addCourier() {
+        const partnerName = document.getElementById('partnerName').value;
+        const serviceRegion = document.getElementById('serviceRegion').value;
+        const contactNumber = document.getElementById('contactNumber').value;
+        const email = document.getElementById('email').value;
+        const address = document.getElementById('address').value;
+        const deliveryTimeframes = document.getElementById('deliveryTimeframes').value;
+        const pricing = document.getElementById('pricing').value;
+        const expressDelivery = document.getElementById('expressDelivery').checked ? 'Yes' : 'No';
+        const standardDelivery = document.getElementById('standardDelivery').checked ? 'Yes' : 'No';
+        const sameDayDelivery = document.getElementById('sameDayDelivery').checked ? 'Yes' : 'No';
+        const internationalShipping = document.getElementById('internationalShipping').checked ? 'Yes' : 'No';
+
+        if (!partnerName || !serviceRegion || !contactNumber || !email) {
+          alert('Please fill in all required fields!');
+          return;
+        }
+
+        // Save to localStorage
+        const courierData = JSON.parse(localStorage.getItem('courierPartners')) || [];
+        courierData.push({
+          partnerName,
+          serviceRegion,
+          contactNumber,
+          email,
+          address,
+          deliveryTimeframes,
+          pricing: pricing || 'N/A',
+          deliveryOptions: {
+            expressDelivery,
+            standardDelivery,
+            sameDayDelivery,
+            internationalShipping,
+          }
+        });
+        localStorage.setItem('courierPartners', JSON.stringify(courierData));
+
+        // Add row to table dynamically
+        addRowToTable({
+          partnerName,
+          serviceRegion,
+          contactNumber,
+          email,
+          address,
+          deliveryTimeframes,
+          pricing: pricing || 'N/A',
+          deliveryOptions: {
+            expressDelivery,
+            standardDelivery,
+            sameDayDelivery,
+            internationalShipping,
+          }
+        });
+
+        // Clear the form
+        document.getElementById('partnerName').value = '';
+        document.getElementById('serviceRegion').value = '';
+        document.getElementById('contactNumber').value = '';
+        document.getElementById('email').value = '';
+        document.getElementById('address').value = '';
+        document.getElementById('deliveryTimeframes').value = '';
+        document.getElementById('pricing').value = '';
+        document.getElementById('expressDelivery').checked = false;
+        document.getElementById('standardDelivery').checked = false;
+        document.getElementById('sameDayDelivery').checked = false;
+        document.getElementById('internationalShipping').checked = false;
+      }
+
+      function loadCourierData() {
+        const courierData = JSON.parse(localStorage.getItem('courierPartners')) || [];
+        const table = document.getElementById('courierTable').getElementsByTagName('tbody')[0];
+        table.innerHTML = ''; // Clear existing rows
+        courierData.forEach(data => addRowToTable(data));
+      }
+
+      function addRowToTable(data) {
+        const table = document.getElementById('courierTable').getElementsByTagName('tbody')[0];
+        const row = table.insertRow();
+        row.innerHTML = `
+          <td>${data.partnerName}</td>
+          <td>${data.serviceRegion}</td>
+          <td>${data.contactNumber}</td>
+          <td>${data.email}</td>
+          <td>${data.address}</td>
+          <td>${data.deliveryTimeframes}</td>
+          <td>${data.pricing}</td>
+          <td>
+            Express: ${data.deliveryOptions.expressDelivery}, Standard: ${data.deliveryOptions.standardDelivery}, 
+            Same Day: ${data.deliveryOptions.sameDayDelivery}, Intl: ${data.deliveryOptions.internationalShipping}
+          </td>
+        `;
+      }
+
+      // Load data on page load
+      document.addEventListener('DOMContentLoaded', loadCourierData);
+    </script>
+  </div>
+</body>
+</html>
